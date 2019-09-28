@@ -3,16 +3,21 @@ defmodule Counter do
   Documentation for Counter.
   """
 
-  alias Counter.Core
+  alias Counter.Server
 
-  def start(f) do
-    run(f, 0)
+  def start(initial_count) do
+    spawn(fn -> Server.run(initial_count) end)
   end
 
-  def run(counter_function, count) do
-    counter_function.(count)
-    new_count = Core.inc(count)
-    :timer.sleep(1000)
-    run(counter_function, new_count)
+  def tick(pid) do
+    send(pid, {:tick, self()})
+  end
+
+  def state(pid) do
+    send(pid, {:state, self()})
+
+    receive do
+      {:count, value} -> value
+    end
   end
 end
